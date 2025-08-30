@@ -9,16 +9,18 @@ function make_base(v) {
   };
 }
 
-function createHurdles(left,top) {
+function createHurdles(left,top, heigth) {
   ctx.beginPath();
-  ctx.rect(left, top, 100, 250);
+  ctx.rect(left, top, 100, heigth);
   ctx.fill();
 }
 
 
-function gameEnded(birdTop,towerPosition){
-    if((birdTop<250 && towerPosition<110 && towerPosition>-50) || (birdTop+100>450 && towerPosition<110 && towerPosition>-50)){
+function gameEnded(birdTop,towerPosition, upperTowerHeight, lowerTowerHeight){
+    if((birdTop<upperTowerHeight && towerPosition<110 && towerPosition>-50) || (birdTop+100>upperTowerHeight+200 && towerPosition<110 && towerPosition>-50)){
         return true;
+    }else if((birdTop<=0)|| birdTop+100>=700){
+      return true;
     }
     return false;
 }
@@ -29,29 +31,36 @@ const main = async () => {
   let a = 80;
   let t = 0.0166;
   let initialVelocity = 0;
+  let userScore = 0;
 
 
   const combinedTowerHeight = 500;
 
   document.onkeydown = () => {
-    console.log("pressed");
     initialVelocity = -100;
   };
 
   let l= 1000; 
   let userLost = false;
+  let upperTowerHeight = 250;
+  let reductionSpeed = 1;
+  let lowerTowerHeight = combinedTowerHeight - upperTowerHeight;
   for (let i = 0; i < 100000; i++) {
     initialVelocity = initialVelocity + a * t;
     v = v + initialVelocity * t;
     ctx.clearRect(0, 0, 1000, 700);
     make_base(v);
-    createHurdles(l-10,0);
-    createHurdles(l-10,450);
-    l=l-1;
+    createHurdles(l-10,0, upperTowerHeight);
+    createHurdles(l-10,700-(combinedTowerHeight - upperTowerHeight), lowerTowerHeight);
+    l=l-reductionSpeed;
     if(l<=-100){
+        reductionSpeed += 0.5;
+        upperTowerHeight = Math.floor(Math.random() * 10) * 40;
+        lowerTowerHeight = combinedTowerHeight - upperTowerHeight;
         l=1000;
+        userScore++;
     }
-    if(gameEnded(v, l)){
+    if(gameEnded(v, l, upperTowerHeight, lowerTowerHeight)){
         userLost = true;
         break;
     }
@@ -59,7 +68,7 @@ const main = async () => {
   }
 
   if(userLost){
-    alert("noob you lost");
+    alert("noob you lost, your score was "+ userScore);
     return;
   }
 
